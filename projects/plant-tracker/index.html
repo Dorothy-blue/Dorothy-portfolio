@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plant Tracker — Portfolio Case Study</title>
+  <meta name="description" content="Plant Tracker portfolio case study: a full-stack web app for plant care management, watering reminders, public gallery and admin dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7fbf4;
+      --surface: #ffffff;
+      --surface-2: #eef7e9;
+      --text: #172016;
+      --muted: #63715f;
+      --line: #dce9d5;
+      --accent: #3f7f4b;
+      --accent-dark: #285c34;
+      --accent-soft: #d9ecd2;
+      --shadow: 0 24px 70px rgba(31, 73, 38, 0.12);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(118, 176, 105, 0.22), transparent 34rem),
+        radial-gradient(circle at 100% 20%, rgba(216, 236, 210, 0.62), transparent 38rem),
+        linear-gradient(180deg, #f8fcf5 0%, #eef7e9 100%);
+      line-height: 1.7;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .page {
+      width: min(1140px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(220, 233, 213, 0.82);
+      background: rgba(247, 251, 244, 0.78);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-inner {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(1140px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .nav-links a:hover { color: var(--accent-dark); }
+
+    .hero {
+      min-height: calc(100vh - 72px);
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 54px;
+      align-items: center;
+      padding: 82px 0 90px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 14px;
+      margin-bottom: 24px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(50px, 8vw, 96px);
+      line-height: 0.92;
+      letter-spacing: -0.085em;
+    }
+
+    .hero-copy {
+      margin: 28px 0 0;
+      color: var(--muted);
+      max-width: 570px;
+      font-size: 20px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 36px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 900;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button.primary {
+      background: var(--text);
+      color: #fff;
+      box-shadow: 0 16px 36px rgba(23, 32, 22, 0.18);
+    }
+
+    .button.secondary {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 42px rgba(23, 32, 22, 0.14);
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 560px;
+      display: grid;
+      align-items: center;
+    }
+
+    .leaf-blob {
+      position: absolute;
+      inset: 78px 20px 40px;
+      border-radius: 38% 62% 52% 48%;
+      background: linear-gradient(135deg, #d8ecd0 0%, #ffffff 48%, #a6cf9d 100%);
+      opacity: 0.92;
+      box-shadow: inset 0 0 90px rgba(63, 127, 75, 0.13);
+    }
+
+    .browser-stack {
+      position: relative;
+      display: grid;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .browser {
+      overflow: hidden;
+      border: 1px solid rgba(220, 233, 213, 0.9);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .browser.main {
+      width: min(760px, 100%);
+      transform: rotate(1.4deg);
+      margin-left: auto;
+    }
+
+    .browser.small {
+      position: absolute;
+      width: 42%;
+      left: -8px;
+      bottom: -40px;
+      transform: rotate(-4deg);
+    }
+
+    .browser-bar {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: #f5f8f2;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #b9c9b1;
+    }
+
+    .browser img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    section { padding: 86px 0; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 32px;
+      margin-bottom: 38px;
+    }
+
+    .section-kicker {
+      margin: 0 0 10px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -0.065em;
+    }
+
+    .section-intro {
+      max-width: 470px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .card {
+      border: 1px solid rgba(220, 233, 213, 0.96);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: 0 18px 54px rgba(31, 73, 38, 0.075);
+      overflow: hidden;
+    }
+
+    .card.padded { padding: 32px; }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+    }
+
+    .overview-copy {
+      display: grid;
+      gap: 20px;
+    }
+
+    .overview-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .meta-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .meta {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--surface-2);
+    }
+
+    .meta span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .meta strong {
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .screenshot-card {
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      min-height: 250px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      color: var(--accent-dark);
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: -0.035em;
+    }
+
+    .feature-card p,
+    .process-card p,
+    .tech-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .screen-card {
+      padding: 14px;
+    }
+
+    .screen-window {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .screen-window img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .screen-card h3 {
+      margin: 16px 6px 4px;
+      font-size: 18px;
+    }
+
+    .screen-card p {
+      margin: 0 6px 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mobile-section {
+      display: grid;
+      grid-template-columns: 0.75fr 1.25fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .phone-frame {
+      width: min(280px, 100%);
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 34px;
+      background: #172016;
+      box-shadow: var(--shadow);
+    }
+
+    .phone-frame img {
+      border-radius: 25px;
+      width: 100%;
+      aspect-ratio: 9 / 19.5;
+      object-fit: cover;
+      object-position: top center;
+      background: #fff;
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .process-card,
+    .tech-card {
+      padding: 26px;
+    }
+
+    .step {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      border-radius: 999px;
+      background: var(--text);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .tech-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 24px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .reflection {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 24px;
+    }
+
+    .quote {
+      margin: 0;
+      font-size: clamp(30px, 3.8vw, 48px);
+      line-height: 1.1;
+      letter-spacing: -0.065em;
+      font-weight: 900;
+    }
+
+    .reflection-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .reflection-item {
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--surface-2);
+    }
+
+    .reflection-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .reflection-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 46px 0 60px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .overview-grid,
+      .mobile-section,
+      .tech-layout,
+      .reflection {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 62px;
+      }
+
+      .hero-visual {
+        min-height: 480px;
+      }
+
+      .browser.small {
+        width: 46%;
+        bottom: -30px;
+      }
+
+      .feature-grid,
+      .process-grid,
+      .screen-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .section-intro {
+        margin-top: 16px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page,
+      .nav-inner {
+        width: min(100% - 24px, 1140px);
+      }
+
+      .nav-links { display: none; }
+
+      .hero {
+        min-height: auto;
+        padding: 52px 0 64px;
+      }
+
+      .hero-copy { font-size: 17px; }
+
+      .hero-visual {
+        min-height: auto;
+        padding-bottom: 34px;
+      }
+
+      .leaf-blob {
+        inset: 58px 4px 24px;
+      }
+
+      .browser.main {
+        transform: none;
+      }
+
+      .browser.small {
+        position: relative;
+        width: 74%;
+        left: 0;
+        bottom: 0;
+        margin-top: 18px;
+        transform: none;
+      }
+
+      .feature-grid,
+      .process-grid,
+      .screen-grid,
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section { padding: 64px 0; }
+
+      .card.padded { padding: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#">Plant Tracker</a>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#features">Features</a>
+        <a href="#screens">Screens</a>
+        <a href="#tech">Tech</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="page hero">
+      <div>
+        <div class="eyebrow">Full‑Stack Web App</div>
+        <h1>Plant Tracker</h1>
+        <p class="hero-copy">
+          一个植物养护管理网站，支持用户注册登录、添加植物、记录浇水与养护活动、浏览公共植物图库，并提供管理员后台管理功能。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#screens">查看界面</a>
+          <a class="button secondary" href="#overview">了解项目</a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="Plant Tracker screenshots">
+        <div class="leaf-blob"></div>
+        <div class="browser-stack">
+          <div class="browser main">
+            <div class="browser-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <img src="assets/home.webp" alt="Plant Tracker home page screenshot">
+          </div>
+          <div class="browser small">
+            <div class="browser-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <img src="assets/my-plants.webp" alt="My plants dashboard screenshot">
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="overview" class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Project Overview</p>
+          <h2>项目概览</h2>
+        </div>
+        <p class="section-intro">
+          Plant Tracker 面向需要管理多盆植物的用户，核心目标是让植物信息、浇水日期和养护记录集中在一个清晰的系统中。
+        </p>
+      </div>
+
+      <div class="overview-grid">
+        <article class="card padded overview-copy">
+          <p>
+            该项目是一个完整的 Web App，包含普通用户端与管理员端。用户可以创建植物档案、设置浇水频率、上传图片、记录护理活动，并选择是否公开展示自己的植物。
+          </p>
+          <p>
+            页面设计以绿色和自然感为主，强调清晰的信息卡片、明确的操作按钮和易读的表单结构，适合展示全栈开发与产品界面实现能力。
+          </p>
+
+          <div class="meta-grid">
+            <div class="meta">
+              <span>Project Type</span>
+              <strong>Full‑Stack Web App</strong>
+            </div>
+            <div class="meta">
+              <span>Role</span>
+              <strong>Frontend · Backend · Database</strong>
+            </div>
+            <div class="meta">
+              <span>Core Users</span>
+              <strong>Gardeners · Admins</strong>
+            </div>
+            <div class="meta">
+              <span>Focus</span>
+              <strong>Plant Care Management</strong>
+            </div>
+          </div>
+        </article>
+
+        <aside class="card screenshot-card">
+          <img src="assets/gallery.webp" alt="Public plant gallery page">
+        </aside>
+      </div>
+    </section>
+
+    <section id="features" class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Key Features</p>
+          <h2>核心功能</h2>
+        </div>
+        <p class="section-intro">
+          项目功能覆盖用户账户、植物管理、养护记录、公共展示和后台管理。
+        </p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">🔐</div>
+            <h3>用户认证</h3>
+            <p>支持注册、登录、登出，并根据角色区分普通用户和管理员入口。</p>
+          </div>
+        </article>
+
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">🌿</div>
+            <h3>植物档案管理</h3>
+            <p>用户可以添加、编辑和查看植物信息，包括品种、光照、难度和照片。</p>
+          </div>
+        </article>
+
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">💧</div>
+            <h3>浇水追踪</h3>
+            <p>根据浇水频率自动更新下次浇水日期，并保留护理活动记录。</p>
+          </div>
+        </article>
+
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">🖼️</div>
+            <h3>公共植物图库</h3>
+            <p>公开植物可展示在 Gallery 页面，并支持按名称、类型、光照和难度筛选。</p>
+          </div>
+        </article>
+
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">🛠️</div>
+            <h3>管理员后台</h3>
+            <p>管理员可以查看用户与植物统计，并管理用户状态。</p>
+          </div>
+        </article>
+
+        <article class="card feature-card">
+          <div>
+            <div class="feature-icon">📱</div>
+            <h3>响应式布局</h3>
+            <p>页面适配桌面端和移动端，保证不同设备下都能正常浏览和操作。</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="screens" class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Interface Design</p>
+          <h2>界面展示</h2>
+        </div>
+        <p class="section-intro">
+          通过关键页面展示产品流程：从登录注册、管理植物，到查看详情与后台管理。
+        </p>
+      </div>
+
+      <div class="screen-grid">
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/login.webp" alt="Login page"></div>
+          <h3>Login</h3>
+          <p>用户登录入口，表单结构简洁清晰。</p>
+        </article>
+
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/register.webp" alt="Register page"></div>
+          <h3>Register</h3>
+          <p>新用户注册页面，包含基础表单校验流程。</p>
+        </article>
+
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/my-plants.webp" alt="My plants page"></div>
+          <h3>My Plants</h3>
+          <p>集中展示用户自己的植物列表和状态信息。</p>
+        </article>
+
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/add-plant.webp" alt="Add new plant page"></div>
+          <h3>Add New Plant</h3>
+          <p>用于创建植物档案，支持上传图片和设置养护属性。</p>
+        </article>
+
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/plant-details.webp" alt="Plant details page"></div>
+          <h3>Plant Details</h3>
+          <p>展示植物详细信息、护理活动和健康状态更新。</p>
+        </article>
+
+        <article class="card screen-card">
+          <div class="screen-window"><img src="assets/admin-dashboard.webp" alt="Admin dashboard page"></div>
+          <h3>Admin Dashboard</h3>
+          <p>管理员查看系统统计并进入用户管理页面。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Responsive Design</p>
+          <h2>移动端适配</h2>
+        </div>
+        <p class="section-intro">
+          同一套功能在移动端保持可读性和可操作性，适合在作品集中体现响应式设计能力。
+        </p>
+      </div>
+
+      <div class="mobile-section">
+        <article class="card padded">
+          <div class="phone-frame">
+            <img src="assets/mobile-layout.webp" alt="Mobile layout screenshot">
+          </div>
+        </article>
+
+        <article class="card padded overview-copy">
+          <p>
+            移动端布局保留了主要导航、卡片和按钮操作，让用户可以在小屏幕上查看植物信息与完成关键操作。
+          </p>
+          <div class="meta-grid">
+            <div class="meta">
+              <span>Layout</span>
+              <strong>Responsive Cards</strong>
+            </div>
+            <div class="meta">
+              <span>Navigation</span>
+              <strong>Mobile Friendly</strong>
+            </div>
+            <div class="meta">
+              <span>Content</span>
+              <strong>Readable Hierarchy</strong>
+            </div>
+            <div class="meta">
+              <span>Interaction</span>
+              <strong>Clear Actions</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Process</p>
+          <h2>实现思路</h2>
+        </div>
+      </div>
+
+      <div class="process-grid">
+        <article class="card process-card">
+          <div class="step">01</div>
+          <h3>定义用户流程</h3>
+          <p>围绕注册登录、添加植物、查看详情和记录护理活动建立完整使用路径。</p>
+        </article>
+
+        <article class="card process-card">
+          <div class="step">02</div>
+          <h3>设计数据结构</h3>
+          <p>用用户、植物和护理活动三个核心数据表支撑植物管理和记录功能。</p>
+        </article>
+
+        <article class="card process-card">
+          <div class="step">03</div>
+          <h3>实现前后端交互</h3>
+          <p>通过表单提交与 AJAX 请求完成植物浇水、筛选和后台用户管理等操作。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tech" class="page">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Technical Stack</p>
+          <h2>技术实现</h2>
+        </div>
+        <p class="section-intro">
+          项目使用 Flask 构建后端路由和页面渲染，MySQL 管理数据，并结合 HTML、CSS 和 JavaScript 完成界面交互。
+        </p>
+      </div>
+
+      <div class="tech-layout">
+        <article class="card padded tech-card">
+          <h3>Stack</h3>
+          <div class="tag-list">
+            <span class="tag">Python</span>
+            <span class="tag">Flask</span>
+            <span class="tag">MySQL</span>
+            <span class="tag">Jinja Templates</span>
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+            <span class="tag">JavaScript</span>
+          </div>
+        </article>
+
+        <article class="card padded tech-card">
+          <h3>What This Project Demonstrates</h3>
+          <p>
+            这个项目展示了全栈 Web 开发中的常见能力：用户认证、数据库 CRUD、角色权限、文件上传、异步请求、过滤查询、响应式页面和基础后台管理。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="reflection" class="page">
+      <div class="reflection">
+        <article class="card padded">
+          <p class="section-kicker">Reflection</p>
+          <p class="quote">一个好的管理系统，应该让信息更清楚，让日常操作更容易坚持。</p>
+        </article>
+
+        <article class="card padded reflection-list">
+          <div class="reflection-item">
+            <strong>项目收获</strong>
+            <p>通过 Plant Tracker，我练习了从数据库设计、后端路由到前端页面展示的一整套开发流程。</p>
+          </div>
+          <div class="reflection-item">
+            <strong>后续优化</strong>
+            <p>未来可以增加邮件提醒、日历视图、植物成长照片时间线和更完善的数据可视化。</p>
+          </div>
+          <div class="reflection-item">
+            <strong>作品集价值</strong>
+            <p>相比单纯 UI 展示，这个项目更适合体现全栈能力和真实 Web App 的功能完整度。</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="page">
+      <strong>Plant Tracker</strong> — Portfolio Case Study © 2026
+    </div>
+  </footer>
+</body>
+</html>
